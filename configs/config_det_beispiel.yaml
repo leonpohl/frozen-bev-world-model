@@ -1,0 +1,143 @@
+# =============================================================================
+# >>> BEST DET OPERATING POINT: Smooth-L1 + std + energy(4) + cos(0.1), mAP 0.3752 <<<
+# Example training configuration — detection branch
+# =============================================================================
+# World model on the detection latents (256 x 180 x 180, TransFusion branch).
+# Architecture identical to the seg branch; only the token grid is larger
+# (180/4 = 45 -> 2025 tokens/frame) and the latents are normalized to the
+# seg scale via latent_scale.
+#
+# Loss: the best measured operating point (determined systematically after
+# submission, mean of two seeds): Smooth-L1 + channel-spread term +
+# energy weighting (energy_alpha) + cos -> mAP 0.3752 on the
+# full validation set. For comparison: 6-term configuration of the thesis
+# 0.3438 (mse backbone, cos/mean/ssim each 0.1), minimal configuration
+# 0.3264. Rationale for the terms: see README, section objective function.
+#
+# The paths under data/, checkpoints/ and pretrained/ must be adapted to your own
+# environment (see README, section "Data & Weights").
+# The detection branch is not evaluated via the decode validation, but
+# via the injection protocol: recompute predictions to raw scale
+# (factor 1/0.3641) and evaluate them through the frozen TransFusion head
+# via bevfusion_patch/ (LOAD_BEV_LATENTS).
+#
+# Invocation: python -u train_linux.py --config configs/config_det_beispiel.yaml
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Model architecture (identical to the seg branch except for the grid)
+# -----------------------------------------------------------------------------
+model:
+  d_model:    256
+  n_frames:   3
+  grid_size:  45        # det grid: 180/4 (seg: 128/4 = 32)
+  n_heads:    8
+  d_ff:       1024
+  n_layers:   4
+  dropout:    0.1
+  phase:      "cell"
+
+
+# -----------------------------------------------------------------------------
+# Training — best operating point: Smooth-L1 (structure) + std (spread
+# guard) + energy weighting (strong object cells) + cos (channel
+# direction). Each term can be disabled with lambda_i = 0 / alpha = 0.
+# -----------------------------------------------------------------------------
+training:
+  epochs:         50
+  batch_size:     8
+  lr:             1.0e-4
+  weight_decay:   1.0e-4
+  patience:       10
+  # Det does not use mIoU-plateau stopping (no decode validation during
+  # training); stopping is via the val-loss patience.
+  miou_early_stop: false
+  seed:           42
+  num_workers:    4
+  prefetch_factor: 4
+  use_cosine:     true
+  log_every:      5
+  # Loss weights (best operating point, mAP 0.3752)
+  lambda_mse:     1.0     # weight of the reconstruction term (TERM 1)
+  lambda_cos:     0.1     # direction term: strongest single lever of the det branch
+  lambda_mean:    0.0
+  lambda_std:     1.0     # spread guard (distribution calibration)
+  lambda_grad:    0.0
+  lambda_ssim:    0.0     # hurts significantly in both branches
+  # Energy weighting: per-cell weight w = 1 + alpha*E_real/mean(E_real)
+  # on the reconstruction term — upweights the few strong
+  # object cells (pedestrian finding)
+  energy_alpha:   4.0
+  # Distance metric of the reconstruction term (mse | l1 | smooth_l1)
+  recon_loss:     smooth_l1
+  # Thesis baseline as an alternative: recon_loss mse, cos/mean/ssim each 0.1,
+  # energy_alpha 0 -> mAP 0.3438
+
+
+# -----------------------------------------------------------------------------
+# Data (nuScenes trainval, official split) — fp16 memmap packs.
+# latent_scale normalizes the det latents to the seg scale
+# (measured channel spread det/seg ~ 2.75) — keeps the Smooth-L1/std
+# operating points of both branches comparable. The evaluation chain
+# multiplies by 1/0.3641 to recover raw scale.
+# -----------------------------------------------------------------------------
+data:
+  mode: "explicit"
+
+  train_sources:
+    - pkl_path:   "data/nuscenes/nuscenes_infos_train.pkl"
+      latent_dir: "data/latents/det/train"
+
+  val_sources:
+    - pkl_path:   "data/nuscenes/nuscenes_infos_val.pkl"
+      latent_dir: "data/latents/det/val"
+
+  use_packed:   true
+  packed_dtype: float16
+  latent_scale: 0.3641
+  train_packed_dir: "data/latents_packed_fp16/det/train"
+  val_packed_dir:   "data/latents_packed_fp16/det/val"
+
+
+# -----------------------------------------------------------------------------
+# Decode validation — disabled for the det branch (the seg decoder
+# does not fit the 45-cell grid; evaluation see header comment).
+# -----------------------------------------------------------------------------
+decode_validation:
+  enabled:        false
+  seg_checkpoint: "pretrained/bevfusion-seg.pth"
+  decode_every:   3
+  n_subset:       300
+
+
+# -----------------------------------------------------------------------------
+# Checkpoints
+# -----------------------------------------------------------------------------
+checkpoints:
+  dir:        "checkpoints/det_basis"
+  save_every: 10
+
+
+# -----------------------------------------------------------------------------
+# Inference — note: inference.py is designed for the seg branch
+# (32-cell grid). For det, evaluate the predictions via the injection
+# protocol (bevfusion_patch/, LOAD_BEV_LATENTS).
+# -----------------------------------------------------------------------------
+inference:
+  pkl_path:   "data/nuscenes/nuscenes_infos_val.pkl"
+  latent_dir: "data/latents/det/val"
+  checkpoint_phase2: "checkpoints/det_basis/phase2/best_val_loss.pt"
+  output_dir_phase2: "predictions/det_basis"
+  batch_size:    1
+  device:        "auto"
+  rollout_steps: 0
+  max_samples:   null
+
+
+# -----------------------------------------------------------------------------
+# Weights & Biases (optional)
+# -----------------------------------------------------------------------------
+wandb:
+  project: "bev_worldmodel"
+  entity:  null

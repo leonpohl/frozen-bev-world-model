@@ -1,0 +1,30 @@
+# =============================================================================
+# BEV World Model — Referenz-Umgebung (Training/Inferenz)
+# =============================================================================
+# Erzeugen:   conda env create -f environment.yml
+# Aktivieren: conda activate bevwm
+#
+# Deckt Training, Inferenz und Evaluation des Weltmodells ab (train_linux.py,
+# inference.py, eval_full_val.py, rollout_eval.py, tools/, Code/).
+# NICHT enthalten: der BEVFusion/mmdet3d-Stack fuer Latent-Extraktion und
+# annotationsverankerte Decoder-Evaluation — der laeuft in einem separaten
+# Docker-Container (offizielles BEVFusion-Setup + bevfusion_patch/,
+# siehe README "Daten & Gewichte").
+# =============================================================================
+name: bevwm
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pytorch=2.1.2
+  - pytorch-cuda=12.1        # GPU; fuer CPU-only stattdessen: cpuonly
+  - numpy=1.26.4
+  - h5py>=3.11
+  - pyyaml>=6.0
+  - matplotlib>=3.5          # nur fuer scripts_render/ (Figuren)
+  - pandas>=1.4              # nur fuer scripts_render/ (Figuren)
+  - pip
+  - pip:
+      - wandb>=0.16          # optional; Cluster: WANDB_MODE=offline

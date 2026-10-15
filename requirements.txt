@@ -1,0 +1,15 @@
+# BEV World Model — Referenz-Umgebung "bevwm" (Python 3.10, CUDA 12.1)
+# Training/Inferenz (Cluster + lokal):
+torch==2.1.2
+numpy==1.26.4
+h5py>=3.11
+PyYAML>=6.0
+wandb>=0.16          # optional; Cluster: WANDB_MODE=offline
+
+# Nur fuers Rendern der Figuren (scripts_render/, laeuft lokal):
+matplotlib>=3.5
+pandas>=1.4
+
+# NICHT enthalten: BEVFusion/mmdet3d-Stack fuer Latent-Extraktion und
+# Decoder-Evaluation — laeuft in einem separaten Docker-Container
+# (siehe README, Abschnitt "Daten & Gewichte").

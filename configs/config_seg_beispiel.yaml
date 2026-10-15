@@ -1,0 +1,122 @@
+# =============================================================================
+# >>> BEST SEG OPERATING POINT: Smooth-L1 + std, mIoU 0.6946 (full val.) <<<
+# Example training configuration — segmentation branch (minimal setup)
+# =============================================================================
+# Corresponds to the base used in the thesis: 6.05M-predictor,
+# fp16 memmap packs, mIoU-plateau early stopping. The paths under data/,
+# checkpoints/ and pretrained/ must be adapted to your own environment
+# (see README, section "Data & Weights").
+#
+# Invocation: python -u train_linux.py --config examples/config_seg_beispiel.yaml
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Model architecture
+# -----------------------------------------------------------------------------
+model:
+  d_model:    256
+  n_frames:   3
+  grid_size:  32
+  n_heads:    8
+  d_ff:       1024
+  n_layers:   4
+  dropout:    0.1
+  phase:      "cell"
+
+
+# -----------------------------------------------------------------------------
+# Training — 6 explicit loss terms. The minimal configuration of the thesis
+# uses Smooth-L1 + channel-spread term (lambda_std); the remaining terms
+# can be fully disabled with lambda_i = 0.
+# -----------------------------------------------------------------------------
+training:
+  epochs:         50
+  batch_size:     8
+  lr:             1.0e-4
+  weight_decay:   1.0e-4
+  patience:       10
+  # mIoU-plateau early stopping: aborts when three consecutive runs
+  # fail to make progress above the seed variability (0.014 mIoU).
+  miou_early_stop: true
+  miou_patience:   3
+  miou_min_delta:  0.014
+  seed:           42
+  num_workers:    4
+  prefetch_factor: 4
+  use_cosine:     true
+  log_every:      5
+  # Loss weights — minimal configuration of the thesis (mIoU 0.6946 on the
+  # full validation set, proxy scale): only reconstruction + channel-spread term.
+  # The 6-term baseline (cos/mean/ssim each 0.1, recon_loss mse) scores
+  # equally (0.6920).
+  lambda_mse:     1.0     # weight of the reconstruction term (TERM 1)
+  lambda_cos:     0.0
+  lambda_mean:    0.0
+  lambda_std:     1.0
+  lambda_grad:    0.0
+  lambda_ssim:    0.0
+  # Distance metric of the reconstruction term (mse | l1 | smooth_l1)
+  recon_loss:     smooth_l1
+
+
+# -----------------------------------------------------------------------------
+# Data (nuScenes trainval, official split) — fp16 memmap packs
+# -----------------------------------------------------------------------------
+data:
+  mode: "explicit"
+
+  train_sources:
+    - pkl_path:   "data/nuscenes/nuscenes_infos_train.pkl"
+      latent_dir: "data/latents/seg/train"
+
+  val_sources:
+    - pkl_path:   "data/nuscenes/nuscenes_infos_val.pkl"
+      latent_dir: "data/latents/seg/val"
+
+  # Memmap pack + fp16: idempotent packing on first run, skip afterwards.
+  use_packed:   true
+  packed_dtype: float16
+  train_packed_dir: "data/latents_packed_fp16/seg/train"
+  val_packed_dir:   "data/latents_packed_fp16/seg/val"
+
+
+# -----------------------------------------------------------------------------
+# Decode validation — controls best_miou.pt (proxy scale,
+# subsample of 300 windows)
+# -----------------------------------------------------------------------------
+decode_validation:
+  enabled:        true
+  seg_checkpoint: "pretrained/bevfusion-seg.pth"
+  decode_every:   3
+  n_subset:       300
+
+
+# -----------------------------------------------------------------------------
+# Checkpoints
+# -----------------------------------------------------------------------------
+checkpoints:
+  dir:        "checkpoints/seg_basis"
+  save_every: 10
+
+
+# -----------------------------------------------------------------------------
+# Inference (inference.py; CLI arguments override the values here)
+# -----------------------------------------------------------------------------
+inference:
+  pkl_path:   "data/nuscenes/nuscenes_infos_val.pkl"
+  latent_dir: "data/latents/seg/val"
+  checkpoint_phase2: "checkpoints/seg_basis/phase2/best_miou.pt"
+  output_dir_phase2: "predictions/seg_basis"
+  batch_size:    1
+  device:        "auto"
+  rollout_steps: 0
+  max_samples:   null
+
+
+# -----------------------------------------------------------------------------
+# Weights & Biases (optional)
+# -----------------------------------------------------------------------------
+wandb:
+  project: "bev_worldmodel"
+  entity:  null

@@ -185,9 +185,9 @@ def main():
     gsc = fig.add_gridspec(2, 1, height_ratios=(0.115, 0.62),
                            left=0.004, right=0.996, top=0.706, bottom=0.01,
                            wspace=0.06, hspace=0.10)
-    ax_front = fig.add_axes((0.35, 0.762, 0.30, 0.175))
-    ax_fl = fig.add_axes((0.012, 0.777, 0.248, 0.145))
-    ax_fr = fig.add_axes((0.74, 0.777, 0.248, 0.145))
+    ax_front = fig.add_axes((0.35, 0.775, 0.30, 0.175))
+    ax_fl = fig.add_axes((0.012, 0.79, 0.248, 0.145))
+    ax_fr = fig.add_axes((0.74, 0.79, 0.248, 0.145))
     ax_bl = fig.add_axes((0.012, 0.564, 0.248, 0.145))
     ax_b = fig.add_axes((0.35, 0.549, 0.30, 0.175))
     ax_br = fig.add_axes((0.74, 0.564, 0.248, 0.145))

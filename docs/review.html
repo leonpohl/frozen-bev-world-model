@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frozen BEV World Model — Project Page (double-blind)</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --bg2: #ffffff; --ink: #111111; --muted: #6d6d6d;
+    --line: #dcdcd7; --card: #ffffff; --accent: #111111;
+    -- fonRoboto: "Helvetica Neue", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --sheen: #00000010; --radius: 3px;
+  }
+  [data-theme="dark"] {
+    --bg: #0e0e0f; --bg2: #161617; --ink: #f1f1ec; --muted: #a6a6a2;
+    --line: #2a2a2c; --card: #181819; --accent: #f1f1ec; --sheen: #ffffff12;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.62 var(--fonRoboto);
+         transition: background .4s ease, color .4s ease;
+
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .serif { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+  ::selection { background: #111; color: #fff; }
+  [data-theme="dark"] ::selection { background: #f1f1ec; color: #101011; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px 90px; }
+
+  /* ---------------- hero (typographic, black band, canvas grid) -------------- */
+  .hero { position: relative; overflow: hidden; background: var(--accent);
+          color: #fbfbfa; padding: 88px 0 58px; }
+  [data-theme="dark"] .hero { background: #08080a; border-bottom: 1px solid #1c1c1e; }
+  .hero .rule { position: absolute; inset: auto 0 0 0; height: 1px;
+                background: #ffffff26; }
+  #dots { position: absolute; inset: 0; opacity: .9; }
+  .hero .wrap { position: relative; padding-bottom: 0; }
+  .pill { display: inline-flex; gap: 7px; color: #f3f3ef; border: 1px solid #ffffff40;
+          border-radius: 2px; padding: 5px 13px; font-size: 12.5px; margin-right: 8px;
+          letter-spacing: .06em; text-transform: uppercase; }
+  h1 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+       font-weight: 600; font-size: clamp(31px, 4.5vw, 43px); line-height: 1.17;
+       margin: 20px 0 12px; letter-spacing: -0.005em; max-width: 30ch; }
+  h1 .line { display: block; overflow: hidden; }
+  h1 .line > span { display: block; transform: translateY(110%);
+                    animation: rise .95s cubic-bezier(.2,.8,.2,1) forwards; }
+  h1 .line:nth-child(2) > span { animation-delay: .14s; }
+  @keyframes rise { to { transform: none; } }
+  .anon { font-size: 14.5px; color: #cfcfca; opacity: 0; animation: rise2 .8s .5s ease forwards; }
+  @keyframes rise2 { from { opacity: 0; transform: translateY(8px); }
+                     to { opacity: 1; transform: none; } }
+  .anon b { color: #fff; }
+
+  /* ---------------- sections ---------------- */
+  section { margin-top: 64px; }
+  .reveal { opacity: 0; transform: translateY(18px); }
+  .reveal.visible { opacity: 1; transform: none;
+                    transition: opacity .65s ease, transform .65s cubic-bezier(.2,.8,.3,1); }
+  h2 { font-family: Georgia, serif; font-size: clamp(21px, 2.6vw, 25px);
+       display: inline-block; margin: 0 0 6px; padding-bottom: 7px;
+       border-bottom: 2px solid var(--ink); }
+  .kick { color: var(--muted); font-size: 13px; text-transform: uppercase;
+          letter-spacing: .08em; margin-bottom: 5px; }
+  .lead { font-size: 17.5px; max-width: 62rem; }
+  .lead b { font-weight: 700; }
+  .grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g2-uneven { grid-template-columns: 1.25fr 1fr; }
+  .card { background: var(--card); border: 1px solid var(--line);
+          border-radius: var(--radius); padding: 20px 22px;
+          transition: transform .3s cubic-bezier(.2,.8,.3,1), box-shadow .3s ease,
+                      border-color .3s ease; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px #00000012;
+                border-color: var(--ink); }
+  [data-theme="dark"] .card:hover { box-shadow: 0 14px 34px #00000080; }
+
+  /* plate: matted figure shell so the white-background renders sit well */
+  .plate { background: #ffffff; border: 1px solid #cfcfca; padding: 10px;
+           border-radius: 2px; box-shadow: 0 8px 26px #00000016;
+           transition: transform .45s cubic-bezier(.2,.8,.3,1), box-shadow .35s ease; }
+  .plate img { width: 100%; display: block; border-radius: 1px; }
+  .plate:hover { transform: translateY(-4px) scale(1.003);
+                 box-shadow: 0 20px 44px #00000022; }
+  .plate-fig { color: #7a7a76; font-size: 12px; letter-spacing: .05em;
+               text-transform: uppercase; margin: 0 0 9px 3px; }
+  .zoomable { cursor: zoom-in; }
+  .cap { color: var(--muted); font-size: 14px; margin-top: 10px; }
+  .cap b { color: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px;
+            color: var(--muted); margin-top: 12px; }
+  .legend b { color: var(--ink); }
+  .sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px;
+        margin-right: 6px; vertical-align: -1px; }
+  .note { border-left: 3px solid var(--ink); background: var(--bg2);
+          padding: 11px 15px; color: var(--muted); font-size: 14px; margin-top: 14px; }
+  .note b { color: var(--ink); }
+  code { background: var(--bg2); border: 1px solid var(--line); border-radius: 3px;
+         padding: 1px 6px; font-size: 13px; }
+
+  /* showcase */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+           border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .chip { border: 1px solid var(--line); background: transparent; color: var(--ink);
+          border-radius: 2px; padding: 8px 16px; font-size: 14px; cursor: pointer;
+          transition: transform .22s ease, background .3s ease, color .3s ease; }
+  .chip:hover { transform: translateY(-2px); border-color: var(--ink); }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink);
+             font-weight: 600; }
+  .shot { display: none; }
+  .shot.on { display: block; animation: fade .5s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(7px); }
+                    to { opacity: 1; transform: none; } }
+
+  /* results */
+  table.results { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .results th, .results td { border-bottom: 1px solid var(--line); padding: 9px 10px;
+                             text-align: right; font-variant-numeric: tabular-nums; }
+  .results th:first-child, .results td:first-child { text-align: left; }
+  .results thead th { color: var(--muted); font-weight: 600; font-size: 12.5px;
+                      text-transform: uppercase; letter-spacing: .05em; }
+  .results td.hl { font-weight: 700; color: var(--ink); }
+  svg.chart text { fill: var(--muted); font-size: 11px;
+                   font-family: var(--fonRoboto); }
+  .theme-btn { position: fixed; right: 20px; bottom: 20px; z-index: 40;
+               border: 1px solid var(--ink); background: var(--bg2);
+               color: var(--ink); border-radius: 2px; padding: 9px 15px;
+               cursor: pointer; font-size: 13.5px; letter-spacing: .03em;
+               transition: transform .22s ease, box-shadow .25s ease; }
+  .theme-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 26px #00000024; }
+
+  /* lightbox (FLIP-zoomed open) */
+  .lightbox { position: fixed; inset: 0; background: #0a0a0bd9;
+              backdrop-filter: blur(6px); z-index: 60; display: none;
+              align-items: center; justify-content: center; flex-direction: column;
+              padding: 28px; }
+  .lightbox.open { display: flex; animation: lbf .25s ease; }
+  @keyframes lbf { from { opacity: 0; } to { opacity: 1; } }
+  .lightbox img { max-width: min(1500px, 94vw); max-height: 82vh;
+                  background: #fff; border-radius: 2px;
+                  transition: transform .34s cubic-bezier(.2,.8,.2,1); }
+  .lb-row { display: flex; align-items: center; gap: 18px; margin-top: 14px; }
+  .lb-cap { color: #d9d9d4; font-size: 14.5px; text-align: center; max-width: 66rem; }
+  .lb-nav { background: #ffffff12; color: #f2f2ee; border: 1px solid #ffffff38;
+            border-radius: 2px; padding: 8px 17px; cursor: pointer; font-size: 17px; }
+  .lb-nav:hover { background: #ffffff2a; }
+  .lb-x { position: absolute; top: 14px; right: 22px; color: #fff; font-size: 30px;
+          cursor: pointer; opacity: .8; }
+  .lb-x:hover { opacity: 1; }
+
+  .foot { margin-top: 66px; border-top: 1px solid var(--line); padding-top: 15px;
+          color: var(--muted); font-size: 13px; }
+  @media (max-width: 860px) { .g2, .g2-uneven { grid-template-columns: 1fr; } }
+  @media print { .reveal { opacity: 1 !important; transform: none !important; }
+                 .hero { animation: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important;
+                             scroll-behavior: auto; }
+    .reveal, .anon, h1 .line > span, .reveal-icons { opacity: 1 !important;
+                                                     transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <canvas id="dots"></canvas>
+  <div class="wrap">
+    <div class="reveal-icons" style="opacity:0; animation: rise2 .8s .9s ease forwards">
+      <span class="pill">🚗 BEV World Model</span>
+      <span class="pill">Perception stack stays frozen</span>
+      <span class="pill">🔒 Anonymous — double-blind review</span>
+    </div>
+    <h1 aria-label="Extending BEV Perception into the Future: Reusing the Frozen Perception Stack">
+      <span class="line"><span>Extending BEV Perception into the Future:</span></span>
+      <span class="line"><span>Reusing the Frozen Perception Stack</span></span>
+    </h1>
+    <div class="anon"><b>Anonymous Authors</b> — paper under double-blind review ·
+    links &amp; names at publication</div>
+  </div>
+  <div class="rule"></div>
+</div>
+
+<div class="wrap">
+
+<section class="reveal">
+  <p class="lead">A compact Transformer forecasts the next <b>fused bird's-eye-view
+  latent</b> of a frozen BEVFusion stack 0.5&nbsp;s ahead from three preceding
+  latents — and the stack's <b>original frozen heads</b> decode the forecast.
+  Forecast quality lands between persistence and the real-future reference for
+  both map segmentation and 3D detection — a modular, view-consistent future
+  estimate for existing vehicle stacks, without retraining the perception
+  system (<span class="num" data-v="6" data-d="0">6</span>M parameters,
+  <span class="num" data-v="4.4" data-d="1">4.4</span>–<span class="num"
+  data-v="11.5" data-d="1">11.5</span> ms per step on a TITAN RTX).</p>
+</section>
+
+<section id="showcase" class="reveal">
+  <p class="kick">Demonstrations</p>
+  <h2>Interactive showcase — choose a scene</h2>
+  <div class="card showcase">
+    <div class="chips">
+      <button class="chip on" data-shot="s1">Maps + detections (street)</button>
+      <button class="chip" data-shot="s2">Busy intersection</button>
+      <button class="chip" data-shot="s3">Fast street</button>
+      <button class="chip" data-shot="s4">Pedestrian crossing</button>
+      <button class="chip" data-shot="s5">Gate-α drive (map-only)</button>
+      <button class="chip" data-shot="s6">Paper filmstrip</button>
+    </div>
+    <div id="shots">
+      <div class="shot on" data-shot="s1">
+        <div class="plate">
+          <p class="plate-fig">Plate I — the world model anticipates the scene</p>
+          <img class="zoomable" src="assets/hero_combo_d5324133.gif" alt="maps + detections rollout">
+        </div>
+        <p class="cap"><b>Construction street</b> — lane-blocking work zone;
+        drift ratio 1.38 (slight motion over-shoot); map mIoU 0.90 → 0.71 within
+        the first 4 s; detections matched up to 11/19 GT-class vehicles &lt; 2 m.</p>
+      </div>
+      <div class="shot" data-shot="s2">
+        <div class="plate">
+          <p class="plate-fig">Plate II — dense traffic</p>
+          <img class="zoomable" src="assets/hero_combo_f1b7b463.gif" alt="busy intersection rollout">
+        </div>
+        <p class="cap"><b>Busy intersection</b> — oncoming + parked traffic and
+        pedestrians; drift ratio 0.98 (near-perfect motion tracking); matched
+        17/47 at k = 5.</p>
+      </div>
+      <div class="shot" data-shot="s3">
+        <div class="plate">
+          <p class="plate-fig">Plate III — speed</p>
+          <img class="zoomable" src="assets/hero_combo_029af235.gif" alt="fast street rollout">
+        </div>
+        <p class="cap"><b>Fast street</b> — the fastest scene: slight overshoot
+        (drift ratio 1.72) honestly reflects the speed-extrapolation limit.</p>
+      </div>
+      <div class="shot" data-shot="s4">
+        <div class="plate">
+          <p class="plate-fig">Plate IV — waiting scenes matter too</p>
+          <img class="zoomable" src="assets/maps_crossing_pure.gif" alt="pedestrian crossing rollout">
+        </div>
+        <p class="cap"><b>Pedestrian crossing</b> — copy-dominant scene (ᾱ 0.03): the ego waits
+        while a crowd crosses; map-only display — everything shown is decoded,
+        nothing is LiDAR/boxes.</p>
+      </div>
+      <div class="shot" data-shot="s5">
+        <div class="plate">
+          <p class="plate-fig">Plate V — the copy/predict mechanism</p>
+          <img class="zoomable" src="assets/maps_gate_pure.gif" alt="gate-alpha drive rollout">
+        </div>
+        <p class="cap"><b>Gate-α drive</b> — maximum-gate scene (ᾱ = 0.71) anchoring the paper's
+        copy/predict story; map-only pure display (no LiDAR/boxes): the
+        forecast follows the moving road structures while persistence
+        freezes (mIoU 0.70 → 0.38 by 3 s).</p>
+      </div>
+      <div class="shot" data-shot="s6">
+        <div class="plate">
+          <p class="plate-fig">Plate VI — publication style</p>
+          <img class="zoomable" src="assets/rollout_filmstrip.png" alt="paper filmstrip">
+        </div>
+        <p class="cap"><b>Paper filmstrip</b> — context + four rollout steps,
+        as printed in the paper's teaser.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="sw" style="background:#e6a142"></span>colored = forecast map</span>
+      <span><span class="sw" style="background:#ff6b57"></span>red = forecast detections (frozen head)</span>
+      <span><span class="sw" style="background:#34d0ff"></span>cyan = decoded from the real future latent (oracle)</span>
+      <span><span class="sw" style="background:#9aa4b0"></span>gray dashes = actual traffic (GT)</span>
+    </div>
+    <div class="note"><b>Honesty by design:</b> scenes are selected by disclosed,
+    documented rules (gate-α statistics / front-arc traffic counts — no image
+    quality cherry-picking). The mIoU/matched badges = per-step metrics of
+    <i>the shown scene</i> — the same numbers as the <b>orange curve</b> in
+    each GIF's corner sparkline, where a dot marks the current step:
+    <b>orange = this scene</b>; <b>solid black = aggregate forecast</b>
+    (world model); <b>dashed gray = naive persistence</b> (last observed map
+    copied forward); <b>dotted gray = ego-compensated persistence</b> (the
+    same map warped by the known ego pose — the hardest baseline, measured
+    to 2.0&nbsp;s). Scene-level variation is real — the paper's claim
+    rests on the aggregate (chart below). The GIFs cover the first
+    4&nbsp;s — the range where the forecast visibly tracks ego motion.</div>
+  </div>
+</section>
+
+<section id="results" class="reveal">
+  <p class="kick">Evaluation</p>
+  <h2>Results — full validation, against nuScenes annotations</h2>
+  <div class="grid g2-uneven">
+    <div class="card">
+      <table class="results">
+        <thead><tr><th>Task / metric</th><th>Persistence</th>
+          <th>Forecast (WM)</th><th>Real latent</th></tr></thead>
+        <tbody>
+          <tr><td>Map segmentation (mIoU)</td><td class="num" data-v="0.4647"
+              data-d="4">0.4647</td><td class="hl num" data-v="0.5898" data-d="4">0.5898</td>
+              <td class="num" data-v="0.6295" data-d="4">0.6295</td></tr>
+          <tr><td>3D detection (mAP)</td><td class="num" data-v="0.1696"
+              data-d="4">0.1696</td><td class="hl num" data-v="0.3752" data-d="4">0.3752</td>
+              <td class="num" data-v="0.6858" data-d="4">0.6858</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">† best detection configuration (two-seed mean). The frozen
+      heads decode both forecasts and real latents — the two pipelines never
+      mix numbers.</p>
+    </div>
+    <div class="card">
+      <h3 class="serif" style="margin-top:0">How the forecast decays with horizon</h3>
+      <svg class="chart" id="decay" viewBox="0 0 470 205" width="100%"
+           aria-label="aggregate proxy mIoU decay"></svg>
+      <p class="cap"><b>solid black</b> = forecast (world model) ·
+      <b>dashed gray</b> = naive persistence · <b>dotted</b> =
+      ego-compensated persistence. Aggregate rollout (4,915 validation
+      windows, the paper's protocol): proxy mIoU above naive <i>and</i>
+      ego-compensated persistence at every measured step
+      (+0.067 / +0.035 mIoU at 0.5 / 2.0 s; the dotted baseline spans
+      0.5–2.0&nbsp;s because the ego-warp protocol measured four steps).
+      Scene-level decay can dip below the compensated baseline at long
+      horizons — the claim rests on the aggregate. In the GIFs, the orange
+      curve is the shown scene's own decay against these same aggregate
+      curves.</p>
+    </div>
+  </div>
+  <div class="note"><b>Two metric families, two jobs:</b> video badges show
+  <i>proxy</i> mIoU (forecast latent vs. the same frozen decoder fed the real
+  future latent — recomputable from latents alone, no labels needed). The table
+  shows <i>annotation</i> metrics (mIoU / mAP against nuScenes labels via the
+  injection pipeline). They are never compared with each other.</div>
+</section>
+
+<section id="paper" class="reveal">
+  <p class="kick">Artifacts</p>
+  <h2>Paper &amp; code</h2>
+  <div class="card">
+    <p>Preprint/code links follow at publication (double-blind). The evaluated
+    perception stack builds on the public BEVFusion model (Apache-2.0); demo
+    media come from the nuScenes validation split under its research terms.</p>
+    <p style="color:var(--muted); font-size:14px">BibTeX will be added at
+    publication; until then the anonymous review version citing this page as
+    supplementary material suffices.</p>
+  </div>
+</section>
+
+<div class="foot reveal">
+  Static page · regenerates from the repository's demo pipeline · no tracking,
+  no cookies, no external dependencies.
+</div>
+
+</div>
+
+<button class="theme-btn" id="theme">⏻ Dark mode</button>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <div class="lb-x">✕</div>
+  <img id="lb-img" alt="expanded demo">
+  <div class="lb-row">
+    <button class="lb-nav" id="lb-prev">‹</button>
+    <div class="lb-cap" id="lb-cap"></div>
+    <button class="lb-nav" id="lb-next">›</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* theme */
+  const root = document.documentElement, btn = $("#theme");
+  const apply = () => { btn.textContent = root.dataset.theme === "dark"
+      ? "⏻ Light mode" : "⏻ Dark mode"; };
+  btn.addEventListener("click", () => {
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    apply();
+  });
+  apply();
+
+  if (!('IntersectionObserver' in window))
+    $$(".reveal").forEach(el => el.classList.add("visible"));
+  /* scroll reveals (stagger) */
+  const io = new IntersectionObserver(es => es.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add("visible"), 60 * i);
+      io.unobserve(e.target);
+    }
+  }), { threshold: 0.14 });
+  $$(".reveal").forEach(el => io.observe(el));
+
+  /* count-up numbers */
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ioN = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target, v = +el.dataset.v, d = +el.dataset.d;
+    if (reduced) { el.textContent = v.toFixed(d); ioN.unobserve(el); return; }
+    const t0 = performance.now(), dur = 1100;
+    (function tick(t) {
+      const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = (v * ease).toFixed(d);
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+    ioN.unobserve(el);
+  }), { threshold: 0.6 });
+  $$(".num").forEach(el => ioN.observe(el));
+
+  /* hero canvas: the world-shift dot grid */
+  const cv = $("#dots"), ctx = cv.getContext("2d");
+  let dots = [], W2 = 0, H2 = 0, t = 0;
+  function init() {
+    const r = cv.parentElement.getBoundingClientRect();
+    W2 = cv.width = r.width; H2 = cv.height = r.height;
+    dots = [];
+    const cols = Math.floor(W2 / 46), rows = Math.floor(H2 / 40);
+    for (let y = 0; y < rows; y++)
+      for (let x = 0; x < cols; x++)
+        dots.push({ x: x * 46 + 20, y0: y * 40 + 18,
+                    ph: Math.random() * 6.3, sp: .12 + Math.random() * .1 });
+  }
+  function frame() {
+    t += .016;
+    ctx.clearRect(0, 0, W2, H2);
+    for (const d of dots) {
+      const y = (d.y0 + ((t * 60 * d.sp) % (H2 + 40))) % (H2 + 40) - 20;
+      const a = .16 + .13 * Math.sin(t * .8 + d.ph);
+      ctx.beginPath(); ctx.arc(d.x, y, 1.3, 0, 6.3);
+      ctx.fillStyle = "rgba(255,255,255," + a.toFixed(3) + ")";
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  init(); frame();
+  addEventListener("resize", init);
+
+  /* showcase chips */
+  $$(".chip").forEach(ch => ch.addEventListener("click", () => {
+    $$(".chip").forEach(c => c.classList.remove("on"));
+    ch.classList.add("on");
+    $$("#shots .shot").forEach(sh =>
+      sh.classList.toggle("on", sh.dataset.shot === ch.dataset.shot));
+  }));
+
+  /* decay chart (aggregate = the paper's numbers) */
+  const k = [1,2,3,4,5,6,7,8,9,10];
+  const wm   = [0.6961,0.6014,0.5324,0.4786,0.4340,0.3977,0.3678,0.3426,0.3209,0.3022];
+  const naiv = [0.5323,0.4259,0.3765,0.3455,0.3221,0.3036,0.2889,0.2773,0.2675,0.2587];
+  const ego  = [0.6286,0.5387,0.4826,0.4418];
+  const svg = $("#decay"), NS = "http://www.w3.org/2000/svg";
+  const W = 470, H = 205, M = { l: 36, r: 10, t: 18, b: 30 };
+  const X = i => M.l + i * (W - M.l - M.r) / (wm.length - 1);
+  const Y = v => M.t + (1 - v) * (H - M.t - M.b);
+  const el = (n, a, txt) => { const e = document.createElementNS(NS, n);
+    for (const q in a) e.setAttribute(q, a[q]);
+    if (txt !== undefined) e.textContent = txt;
+    svg.appendChild(e); return e; };
+  [0, .25, .5, .75, 1].forEach(v => {
+    el("line", { x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v), stroke: "#00000012" });
+    el("text", { x: M.l - 5, y: Y(v) + 4, "text-anchor": "end" }, v.toFixed(2));
+  });
+  k.forEach((_, i) => el("text", { x: X(i), y: H - 9, "text-anchor": "middle" },
+    (0.5 * (i + 1)).toFixed(1) + "s"));
+  const d1 = el("path", { d: "M" + naiv.map((v, i) => X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" L "),
+    stroke: "#8a8a87", fill: "none", "stroke-width": 1.6, "stroke-dasharray": "5 4" });
+  const d2 = el("path", { d: "M" + wm.map((v, i) => X(i).toFixed(1) + " " + Y(v).toFixed(1)).join(" L "),
+    stroke: "#111111", fill: "none", "stroke-width": 2.6 });
+  ego.forEach((v, i) => {
+    el("circle", { cx: X(i), cy: Y(v), r: 3.2, fill: "#111111", opacity: .9 });
+    if (i) el("line", { x1: X(i-1), y1: Y(ego[i-1]), x2: X(i), y2: Y(v),
+                        stroke: "#8a8a87", "stroke-dasharray": "2 3",
+                        "stroke-width": 1.6, opacity: .9 });
+  });
+  wm.forEach((v, i) => el("circle", { cx: X(i), cy: Y(v), r: 2.6, fill: "#111111" }));
+  el("text", { x: W - M.r, y: M.t + 1, "text-anchor": "end" },
+     "aggregate over 4,915 windows");
+  el("text", { x: M.l + 6, y: Y(wm[0]) - 9, "font-weight": "650" },
+     "forecast (world model)");
+  /* line-draw on view (solid only; dashed = fade) */
+  const len = d2.getTotalLength();
+  d2.style.strokeDasharray = len + " " + len;
+  d2.style.strokeDashoffset = len;
+  d2.style.transition = "stroke-dashoffset 1.7s cubic-bezier(.3,.7,.2,1)";
+  d1.style.opacity = 0; d1.style.transition = "opacity .8s ease .5s";
+  new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { d2.style.strokeDashoffset = 0; d1.style.opacity = 1; }
+  }), { threshold: 0.4 }).observe(svg);
+
+  /* lightbox with FLIP zoom from the clicked plate */
+  const shotsData = $$("#shots .shot").map(sh => ({
+    src: sh.querySelector("img").src,
+    cap: sh.querySelector(".cap").innerHTML }));
+  const lb = $("#lightbox"), lbi = $("#lb-img"), lbc = $("#lb-cap");
+  let cur = 0, animating = false;
+  function openLb(i, fromRect) {
+    cur = (i + shotsData.length) % shotsData.length;
+    lbi.src = shotsData[cur].src; lbc.innerHTML = shotsData[cur].cap;
+    lb.classList.add("open"); lb.setAttribute("aria-hidden", "false");
+    if (fromRect && !animating) {
+      animating = true;
+      const target = lbi.getBoundingClientRect();
+      lbi.src = shotsData[cur].src;
+      lbi.onload = () => {
+        const r = lbi.getBoundingClientRect();
+        const dx = fromRect.left + fromRect.width / 2 - (r.left + r.width / 2);
+        const dy = fromRect.top + fromRect.height / 2 - (r.top + r.height / 2);
+        const s = Math.max(fromRect.width / r.width, .05);
+        lbi.style.transition = "none";
+        lbi.style.transform = "translate(" + dx + "px," + dy + "px) scale(" + s + ")";
+        requestAnimationFrame(() => {
+          lbi.style.transition = "transform .38s cubic-bezier(.2,.8,.2,1)";
+          lbi.style.transform = "none";
+          setTimeout(() => { animating = false; }, 400);
+        });
+      };
+    }
+  }
+  function closeLb() { lb.classList.remove("open");
+                       lb.setAttribute("aria-hidden", "true"); }
+  $$(".zoomable").forEach(im => im.addEventListener("click", () =>
+    openLb(shotsData.findIndex(s => s.src === im.src), im.getBoundingClientRect())));
+  $("#lb-prev").addEventListener("click", () => openLb(cur - 1));
+  $("#lb-next").addEventListener("click", () => openLb(cur + 1));
+  $(".lb-x").addEventListener("click", closeLb);
+  lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
+  document.addEventListener("keydown", e => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") closeLb();
+    if (e.key === "ArrowLeft") openLb(cur - 1);
+    if (e.key === "ArrowRight") openLb(cur + 1);
+  });
+})();
+</script>
+</body>
+</html>
